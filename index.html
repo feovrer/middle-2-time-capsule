@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>My Time Capsule — 타임캡슐 만들어 발표하기</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&family=Fredoka:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --pink:#ffd6e0; --peach:#ffe5cc; --mint:#d4f5e9; --sky:#d6e9ff; --lilac:#e8dcff; --lemon:#fff6c7;
+    --ink:#4a3f5c; --soft:#7b6f8f; --accent:#ff7aa2; --accent2:#7c9cff; --green:#3fbf8f; --orange:#ff9f43; --red:#ff5d73;
+    --card:#ffffffd9; --radius:22px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;min-height:100vh;color:var(--ink);font-family:'Gowun Dodum',sans-serif;font-size:16px;line-height:1.6;
+    background:linear-gradient(135deg,var(--lilac) 0%,var(--sky) 28%,var(--mint) 55%,var(--lemon) 80%,var(--pink) 100%);background-attachment:fixed}
+  h1,h2,h3,.btn,.badge,.step-pill,.chip{font-family:'Jua',sans-serif;font-weight:400}
+  .wrap{max-width:1180px;margin:0 auto;padding:24px 16px 60px}
+  header{text-align:center;margin:8px 0 22px}
+  .logo{font-family:'Fredoka','Jua',sans-serif;font-weight:700;font-size:clamp(34px,6vw,56px);
+    background:linear-gradient(90deg,#b07cff,#7c9cff,#3fbf8f,#ff9f43,#ff6f9c);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .bob{display:inline-block;animation:bob 3s ease-in-out infinite}
+  @keyframes bob{0%,100%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(-6px) rotate(1deg)}}
+  .sub{color:var(--soft);margin-top:4px;font-family:'Jua';font-size:18px}
+  .card{background:var(--card);border-radius:var(--radius);padding:22px;box-shadow:0 10px 30px #b9a7d633;backdrop-filter:blur(6px);border:2px solid #fff}
+  .hidden{display:none!important}
+  .btn{border:none;border-radius:999px;padding:12px 22px;font-size:17px;cursor:pointer;color:#fff;background:var(--accent);box-shadow:0 4px 0 #e05c86;transition:transform .1s,box-shadow .1s}
+  .btn:hover{transform:translateY(-2px)} .btn:active{transform:translateY(2px);box-shadow:0 1px 0 #e05c86}
+  .btn.blue{background:var(--accent2);box-shadow:0 4px 0 #5a78db}
+  .btn.green{background:var(--green);box-shadow:0 4px 0 #2a9a70}
+  .btn.ghost{background:#fff;color:var(--ink);box-shadow:0 4px 0 #ddd3ee}
+  .btn.sm{padding:6px 12px;font-size:14px}
+  .btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+  input,textarea{width:100%;border:2px solid #eadff7;border-radius:16px;padding:12px 14px;font-family:'Gowun Dodum',sans-serif;font-size:16px;color:var(--ink);background:#fff;outline:none}
+  input:focus,textarea:focus{border-color:var(--accent2)}
+  textarea{resize:vertical;min-height:96px;line-height:1.7}
+  label{font-family:'Jua';display:block;margin:12px 0 6px}
+  .tip{font-size:14px;color:var(--soft);margin:4px 0 8px}
+
+  .start{max-width:600px;margin:0 auto}
+  .flow{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;font-family:'Jua';color:var(--soft);font-size:14px;margin-bottom:6px}
+  .flow span{background:#fff;border-radius:999px;padding:4px 12px}
+  .guide{display:grid;gap:10px;margin:16px 0}
+  .guide div{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:16px;font-family:'Jua'}
+  .guide .n{margin-left:auto;background:#fff;border-radius:999px;padding:2px 12px;font-size:14px}
+
+  .steps{display:flex;gap:10px;justify-content:center;margin-bottom:18px;flex-wrap:wrap}
+  .step-pill{padding:8px 18px;border-radius:999px;background:#ffffff99;color:var(--soft)}
+  .step-pill.on{background:#fff;color:var(--accent);box-shadow:0 4px 12px #ff7aa233}
+  .step-pill.done{background:var(--mint);color:#2a9a70}
+  .who{text-align:center;color:var(--soft);margin:-8px 0 16px}
+
+  .grid{display:grid;grid-template-columns:1.25fr 1fr;gap:18px;align-items:start}
+  @media (max-width:900px){.grid{grid-template-columns:1fr}}
+  .letter-edge{font-family:'Fredoka';font-weight:500;font-size:20px;color:var(--accent2);margin:4px 4px 12px}
+  .sec{border-radius:20px;padding:16px;margin-bottom:14px;border:3px solid transparent;transition:border .2s,transform .2s}
+  .sec.active{border-color:#fff;transform:scale(1.01);box-shadow:0 8px 20px #b9a7d644}
+  .s-now{background:var(--peach)} .s-questions{background:var(--sky)} .s-dream{background:var(--mint)} .s-message{background:var(--pink)}
+  .sec-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .sec-head h3{margin:0;font-size:20px}
+  .badge{margin-left:auto;padding:3px 12px;border-radius:999px;background:#fff;font-size:14px;color:var(--soft)}
+  .badge.ok{background:var(--green);color:#fff} .badge.over{background:var(--orange);color:#fff}
+  .warn{font-size:13px;color:#d9480f;margin-top:4px}
+
+  .howto{background:#ffffffcc;border-radius:16px;padding:10px 14px;margin:6px 0 10px;font-size:15px}
+  .howto summary{font-family:'Jua';cursor:pointer;color:var(--accent2);font-size:16px}
+  .howto ol{margin:8px 0 10px;padding-left:22px} .howto li{margin:3px 0}
+  .ex-title{font-family:'Jua';color:var(--accent);margin:6px 0}
+  .ex{display:flex;gap:10px;align-items:flex-start;background:var(--lemon);border-radius:12px;padding:8px 12px;margin:6px 0}
+  .ex-n{font-family:'Jua';background:#fff;border-radius:999px;min-width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:14px}
+  .ex-en{font-family:'Fredoka',sans-serif;font-weight:500}
+  .ex-ko{font-size:13px;color:var(--soft)}
+  .ex-warn{font-size:13px;color:#d9480f;margin-top:6px}
+
+  .chat{position:sticky;top:14px;display:flex;flex-direction:column;height:min(78vh,680px);padding:0;overflow:hidden}
+  .chat-top{padding:14px 18px;background:linear-gradient(90deg,var(--lilac),var(--sky));font-family:'Jua'}
+  .chat-top small{display:block;font-family:'Gowun Dodum';color:var(--soft)}
+  .msgs{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px}
+  .msg{max-width:88%;padding:10px 14px;border-radius:18px;white-space:pre-wrap;word-break:break-word;animation:pop .25s ease}
+  @keyframes pop{from{transform:scale(.9);opacity:0}to{transform:scale(1);opacity:1}}
+  .msg.bot{background:var(--lemon);border-bottom-left-radius:4px;align-self:flex-start}
+  .msg.me{background:var(--pink);border-bottom-right-radius:4px;align-self:flex-end}
+  .msg.wait{color:var(--soft)}
+  .chips{display:flex;gap:6px;flex-wrap:wrap;padding:0 14px 8px}
+  .chip{border:2px solid #eadff7;background:#fff;border-radius:999px;padding:4px 12px;font-size:14px;cursor:pointer;color:var(--ink)}
+  .chip:hover{background:var(--lilac)}
+  .chat-in{display:flex;gap:8px;padding:12px;border-top:2px dashed #eadff7}
+  .chat-in input{flex:1}
+
+  .actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:6px}
+  .saved{color:var(--soft);font-size:14px;align-self:center;margin-right:auto}
+
+  .gitem{background:#fff;border-radius:16px;padding:12px 14px;margin:10px 0;border-left:6px solid var(--orange)}
+  .gitem .where{font-family:'Jua';font-size:14px;color:var(--soft)}
+  .orig{background:#ffe3e3;border-radius:8px;padding:1px 8px;text-decoration:underline wavy #ff6b6b}
+  .sug{background:#dcfce7;border-radius:8px;padding:1px 8px}
+  .overall{background:var(--lemon);border-radius:16px;padding:12px 16px;margin-bottom:8px}
+  .allgood{background:var(--mint);border-radius:16px;padding:16px;text-align:center;font-family:'Jua';font-size:18px}
+
+  .listen-all{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 12px}
+  .line{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:12px;background:#fff;margin:6px 0}
+  .line .txt{flex:1;font-family:'Fredoka';font-weight:500}
+  .line.playing{background:var(--lemon);box-shadow:0 0 0 2px var(--orange) inset}
+  .line .tag{font-family:'Jua';font-size:12px;color:var(--soft);min-width:78px}
+  .sp{border:none;border-radius:999px;padding:5px 10px;font-family:'Jua';cursor:pointer;font-size:13px}
+  .sp.n{background:var(--sky)} .sp.s{background:var(--mint)}
+
+  .script{background:#fff;border-radius:18px;padding:22px 26px;font-family:'Fredoka';font-weight:500;font-size:clamp(18px,2.2vw,22px);line-height:1.9;max-height:52vh;overflow-y:auto}
+  .script p{margin:0 0 6px}
+  .recbox{text-align:center}
+  .recbtn{width:120px;height:120px;border-radius:50%;border:none;cursor:pointer;font-family:'Jua';font-size:20px;color:#fff;background:var(--red);box-shadow:0 6px 0 #d63d55;margin:10px auto;display:flex;flex-direction:column;align-items:center;justify-content:center}
+  .recbtn .ic{font-size:34px;line-height:1}
+  .recbtn.on{background:#4a3f5c;box-shadow:0 6px 0 #2e2639;animation:pulse 1.2s infinite}
+  @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+  .timer{font-family:'Fredoka';font-size:30px;font-weight:700;color:var(--ink)}
+  audio{width:100%;margin:10px 0}
+  .done-box{background:var(--mint);border-radius:16px;padding:18px;text-align:center;font-family:'Jua';font-size:20px}
+
+  table{width:100%;border-collapse:collapse;background:#fff;border-radius:16px;overflow:hidden;font-size:15px}
+  th{background:var(--lilac);font-family:'Jua';font-weight:400;padding:10px}
+  td{padding:10px;border-top:1px solid #f0e8fa;text-align:center}
+  tr.row:hover{background:var(--lemon);cursor:pointer}
+  .tl{border-left:4px solid var(--lilac);margin:10px 0 10px 8px;padding:6px 0 6px 16px}
+  .tl .t{font-size:13px;color:var(--soft)}
+  .tl .k{font-family:'Jua';display:inline-block;padding:1px 10px;border-radius:999px;background:var(--sky);margin-right:6px;font-size:14px}
+  .tl pre{white-space:pre-wrap;font-family:'Gowun Dodum';background:#faf7ff;border-radius:10px;padding:8px 10px;margin:6px 0}
+  .tl pre.ai{background:#fffbe8}
+  footer{text-align:center;margin-top:30px}
+  footer a{color:var(--soft);font-size:13px;cursor:pointer;text-decoration:underline}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 20px;border-radius:999px;font-family:'Jua';z-index:99;transition:opacity .3s;max-width:90vw;text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1 style="margin:0"><span class="logo">My Time Capsule</span> <span class="bob" style="font-size:clamp(30px,5vw,48px)">💌</span></h1>
+    <div class="sub">타임캡슐 만들어 발표하기 — 10년 후의 나에게 보내는 편지</div>
+  </header>
+
+  <!-- 시작 -->
+  <section id="vStart" class="card start">
+    <div class="flow"><span>STEP 1 ✏️ 편지 쓰기</span><span>STEP 2 🔍 점검 · 🔊 듣기</span><span>STEP 3 🎙️ 녹음 제출</span></div>
+    <h2 style="text-align:center;margin:6px 0">10년 후의 나에게 이렇게 써요!</h2>
+    <div class="guide">
+      <div class="s-now">🙋 지금의 나 — 지금 하고 있는 일 <span class="n">2문장</span></div>
+      <div class="s-questions">❓ 미래의 나에게 궁금한 점 <span class="n">4문장</span></div>
+      <div class="s-dream">🌟 나의 장래희망 <span class="n">1문장</span></div>
+      <div class="s-message">💖 미래의 나에게 보내는 희망 메시지 <span class="n">1문장</span></div>
+    </div>
+    <label for="inId">학번</label><input id="inId" placeholder="예: 20101" autocomplete="off">
+    <label for="inName">이름</label><input id="inName" placeholder="이름" autocomplete="off">
+    <div style="text-align:center;margin-top:20px"><button class="btn" id="btnStart">타임캡슐 열기 🚀</button></div>
+  </section>
+
+  <!-- 작성 -->
+  <section id="vMain" class="hidden">
+    <div class="steps">
+      <div class="step-pill" id="pill1">STEP 1 ✏️ 편지 쓰기</div>
+      <div class="step-pill" id="pill2">STEP 2 🔍 점검 · 🔊 듣기</div>
+      <div class="step-pill" id="pill3">STEP 3 🎙️ 녹음 제출</div>
+    </div>
+    <div class="who" id="who"></div>
+
+    <!-- STEP 1 -->
+    <div id="step1" class="grid">
+      <div class="card">
+        <div class="letter-edge">Dear future me, 💌</div>
+        <div id="secs"></div>
+        <div class="letter-edge" id="closing1" style="text-align:right"></div>
+        <div class="actions">
+          <span class="saved" id="saved1"></span>
+          <button class="btn ghost" id="btnSave1">💾 임시 저장</button>
+          <button class="btn blue" id="btnTo2">STEP 2로 가기 →</button>
+        </div>
+      </div>
+      <div class="card chat">
+        <div class="chat-top">🤖 캡슐버디에게 단어·힌트 물어보기<small id="chatFor"></small></div>
+        <div class="msgs" id="msgs"></div>
+        <div class="chips" id="chips"></div>
+        <div class="chat-in">
+          <input id="chatIn" placeholder="궁금한 단어나 표현을 물어봐요 (대신 써 주지는 않아요!)" autocomplete="off">
+          <button class="btn" id="btnSend">보내기</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 2 -->
+    <div id="step2" class="hidden">
+      <div class="grid">
+        <div class="card">
+          <h3 style="margin-top:0">✏️ 내 편지 고치기</h3>
+          <div id="secs2"></div>
+          <div class="actions">
+            <span class="saved" id="saved2"></span>
+            <button class="btn ghost" id="btnBack1">← STEP 1</button>
+            <button class="btn blue" id="btnCheck">🔍 문법 점검하기</button>
+          </div>
+        </div>
+        <div class="card">
+          <h3 style="margin-top:0">🔍 문법 점검 결과</h3>
+          <div class="tip">힌트를 보고 왼쪽 글을 <b>직접</b> 고친 뒤 다시 점검해요. 그래도 모르겠으면 ‘고친 표현 보기’를 눌러요.</div>
+          <div id="gResult"><div class="tip">아직 점검하지 않았어요. 🔍 버튼을 눌러 보세요!</div></div>
+        </div>
+      </div>
+      <div class="card" style="margin-top:18px">
+        <h3 style="margin-top:0">🔊 내 대본 들어 보기</h3>
+        <div class="tip">원어민 발음으로 들어 보고 따라 읽어 봐요. 글을 고치면 아래 문장도 바로 바뀌어요.</div>
+        <div class="listen-all">
+          <button class="btn blue sm" onclick="speakAll(RATE_N)">▶ 전체 듣기 · 보통 속도</button>
+          <button class="btn green sm" onclick="speakAll(RATE_S)">🐢 전체 듣기 · 느린 속도</button>
+          <button class="btn ghost sm" onclick="stopSpeak()">■ 멈추기</button>
+        </div>
+        <div id="lines"></div>
+        <div class="actions" style="margin-top:14px">
+          <button class="btn green" id="btnTo3">대본 확정! STEP 3 녹음하러 가기 🎙️</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 3 -->
+    <div id="step3" class="hidden">
+      <div class="grid">
+        <div class="card">
+          <h3 style="margin-top:0">📜 나의 발표 대본</h3>
+          <div class="listen-all">
+            <button class="btn blue sm" onclick="speakAll(RATE_N)">▶ 보통 속도로 듣기</button>
+            <button class="btn green sm" onclick="speakAll(RATE_S)">🐢 느린 속도로 듣기</button>
+            <button class="btn ghost sm" onclick="stopSpeak()">■ 멈추기</button>
+          </div>
+          <div class="script" id="script3"></div>
+        </div>
+        <div class="card recbox">
+          <h3 style="margin-top:0">🎙️ 녹음하기</h3>
+          <div class="tip">대본을 보며 또박또박 말해요. 녹음 후 들어 보고, 마음에 들 때 제출해요. (최대 3분)</div>
+          <div id="recIdle">
+            <button class="recbtn" id="btnRec"><span class="ic">●</span>녹음 시작</button>
+            <div class="timer" id="timer">00:00</div>
+          </div>
+          <div id="recDone" class="hidden">
+            <audio id="player" controls></audio>
+            <div class="tip" id="recInfo"></div>
+            <div class="actions" style="justify-content:center">
+              <button class="btn ghost" id="btnReRec">🔁 다시 녹음</button>
+              <button class="btn green" id="btnSubmit">📤 제출하기</button>
+            </div>
+          </div>
+          <div id="submitted" class="hidden" style="margin-top:14px"></div>
+          <div class="actions" style="justify-content:center;margin-top:16px">
+            <button class="btn ghost sm" id="btnBack2">← STEP 2로 돌아가 대본 고치기</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 교사용 -->
+  <section id="vTeacher" class="hidden">
+    <div class="card">
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <h2 style="margin:0">👩‍🏫 교사용 — 학생별 과정과 녹음</h2>
+        <button class="btn ghost sm" id="btnReload" style="margin-left:auto">🔄 새로고침</button>
+        <button class="btn ghost sm" id="btnTOut">나가기</button>
+      </div>
+      <div id="tList" style="margin-top:16px"></div>
+      <div id="tDetail" style="margin-top:18px"></div>
+    </div>
+  </section>
+
+  <footer><a id="lnkTeacher">교사용</a></footer>
+</div>
+
+<script>
+/* ★ Apps Script 웹앱 배포 후 받은 주소(…/exec)를 여기에 붙여넣으세요 ★ */
+const API_URL = 'https://script.google.com/macros/s/AKfycbxb4INmkwWLD5GNuTD-0ARAGE2NJLfcOYVgY3jd5PzUsAbQkCwoptPxz-tqD9teef1U/exec';
+
+const RATE_N = 0.95, RATE_S = 0.65;   // 보통 / 느린 속도
+const MAX_SEC = 180;                  // 최대 녹음 시간(초)
+
+const SECTIONS = [
+  {key:'now', short:'지금의 나', name:'지금의 나', en:'What I am doing now', emoji:'🙋', n:2,
+   tip:'지금 내가 하고 있는 일 2가지를 써요.',
+   how:['<b>현재진행형</b>으로 써요 — <b>I am ___ing ~.</b>',
+        '학교생활, 취미, 요즘 열심히 하는 일 중에서 2가지를 골라요',
+        '<b>these days</b>(요즘), <b>after school</b>(방과후에), <b>every day</b>(매일)를 붙이면 더 자연스러워요'],
+   ex:[{en:'I am studying English hard these days.', ko:'요즘 나는 영어를 열심히 공부하고 있어.'},
+       {en:'I am playing badminton with my friends after school.', ko:'나는 방과후에 친구들과 배드민턴을 치고 있어.'},
+       {en:'I am learning how to cook ramyeon.', ko:'나는 라면 끓이는 법을 배우고 있어.'},
+       {en:'I am reading a fantasy novel these days.', ko:'요즘 나는 판타지 소설을 읽고 있어.'}],
+   chips:['요즘 내가 하는 일을 영어로 어떻게 말해?','현재진행형 만드는 법 알려줘','취미 관련 단어 알려줘']},
+  {key:'questions', short:'질문', name:'미래의 나에게 궁금한 점', en:'My questions', emoji:'❓', n:4, q:true,
+   tip:'10년 후의 나에게 묻고 싶은 질문 4개 — 꼭 물음표(?)로 끝내요.',
+   how:['<b>Are you ___?</b> — 기분이나 상태 묻기',
+        '<b>Do you still ___?</b> — 지금 하는 일을 아직도 하는지 묻기',
+        '<b>What / Where / Who / How ___?</b> — 의문사로 자세히 묻기',
+        '4개의 질문이 서로 다른 내용이 되게 해요'],
+   ex:[{en:'Are you happy these days?', ko:'요즘 행복하니?'},
+       {en:'Do you still play badminton?', ko:'아직도 배드민턴 치니?'},
+       {en:'Where do you live now?', ko:'지금 어디에 살고 있니?'},
+       {en:'What is your favorite food now?', ko:'지금 가장 좋아하는 음식은 뭐야?'},
+       {en:'Who is your best friend?', ko:'가장 친한 친구는 누구야?'},
+       {en:'How tall are you now?', ko:'지금 키가 얼마나 돼?'}],
+   chips:['어떤 질문을 하면 좋을까?','의문문 만드는 법 알려줘','Do you와 Are you는 언제 써?']},
+  {key:'dream', short:'장래희망', name:'나의 장래희망', en:'My dream', emoji:'🌟', n:1,
+   tip:'10년 후에 되고 싶은 나의 꿈을 1문장으로 써요.',
+   how:['<b>I want to be a(n) ___.</b> 또는 <b>My dream is to be a(n) ___.</b>',
+        '한 문장 안에 <b>who ___</b>(어떤 일을 하는) 또는 <b>because ___</b>(이유)를 붙이면 더 멋져요'],
+   ex:[{en:'My dream is to be a vet who helps sick animals.', ko:'내 꿈은 아픈 동물을 돕는 수의사가 되는 거야.'},
+       {en:'I want to be a game designer because I love games.', ko:'나는 게임을 좋아해서 게임 디자이너가 되고 싶어.'},
+       {en:'I hope you are a teacher who makes students happy.', ko:'네가 학생들을 행복하게 하는 선생님이 되어 있으면 좋겠어.'}],
+   chips:['직업 이름을 영어로 알려줘','꿈을 말하는 표현 알려줘','이유를 한 문장에 넣는 방법은?']},
+  {key:'message', short:'메시지', name:'희망 메시지', en:'Message of hope', emoji:'💖', n:1,
+   tip:'미래의 나에게 힘이 되는 응원 한마디를 1문장으로 써요.',
+   how:['명령문으로 응원해요 — <b>Never give up ___. / Always ___. / Don’t forget ___.</b>',
+        '또는 <b>I hope you ___.</b>로 바라는 점을 써요'],
+   ex:[{en:'Never give up and always believe in yourself!', ko:'절대 포기하지 말고 언제나 너 자신을 믿어!'},
+       {en:'Don’t forget your dream and keep smiling!', ko:'꿈을 잊지 말고 계속 웃어!'},
+       {en:'I hope you are healthy and happy every day.', ko:'네가 매일 건강하고 행복하길 바라.'}],
+   chips:['응원 메시지 표현 알려줘','I hope 문장 만드는 법','더 멋진 단어 알려줘']}
+];
+const KEYS = SECTIONS.map(s => s.key);
+const YEAR = new Date().getFullYear();
+
+let info = {}, drafts = {now:'',questions:'',dream:'',message:''}, current = 'now';
+const chatHist = {now:[],questions:[],dream:[],message:[]};
+let teacherPw = '', listens = 0;
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function toast(msg){
+  const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg;
+  document.body.appendChild(t); setTimeout(() => { t.style.opacity = 0; setTimeout(() => t.remove(), 300); }, 2600);
+}
+function errMsg(e){ return (e && e.message ? e.message : String(e)).replace(/^Error:\s*/, ''); }
+
+async function run(action, ...args){
+  if (API_URL.includes('여기에_배포_ID')) throw new Error('index.html의 API_URL에 Apps Script 웹앱 주소를 넣어 주세요.');
+  let res;
+  try{
+    res = await fetch(API_URL, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify({action, args}), redirect:'follow'});
+  }catch(e){ throw new Error('서버에 연결하지 못했어요. 인터넷 연결을 확인해 주세요.'); }
+  let out;
+  try{ out = await res.json(); }catch(e){ throw new Error('서버 응답을 읽지 못했어요. (웹앱 액세스 권한이 "모든 사용자"인지 확인)'); }
+  if (!out.ok) throw new Error(out.error);
+  return out.data;
+}
+
+function splitSentences(text){
+  return String(text || '').replace(/\s*\n+\s*/g, ' ').trim().split(/(?<=[.!?])\s+/).filter(s => s.trim());
+}
+function localKey(){ return 'tc_' + info.id + '_' + info.name; }
+function saveLocal(){ try{ localStorage.setItem(localKey(), JSON.stringify(drafts)); }catch(e){} }
+function closingLine(){ return `From, ${info.name ? 'me in ' + YEAR : ''}`; }
+
+/* ---------- 시작 ---------- */
+$('btnStart').onclick = async () => {
+  info = { id:$('inId').value.trim(), name:$('inName').value.trim() };
+  if (!info.id || !info.name) return toast('학번과 이름을 모두 써 주세요!');
+  $('btnStart').disabled = true; $('btnStart').textContent = '여는 중...';
+  try{
+    const r = await run('startSession', info);
+    drafts = Object.assign({now:'',questions:'',dream:'',message:''}, r.drafts);
+    try{
+      const loc = JSON.parse(localStorage.getItem(localKey()) || 'null');
+      const len = d => KEYS.map(k => d[k] || '').join('').length;
+      if (loc && len(loc) > len(drafts)) drafts = Object.assign(drafts, loc);
+    }catch(e){}
+    $('vStart').classList.add('hidden'); $('vMain').classList.remove('hidden');
+    $('who').textContent = `${info.id} ${info.name} · 10년 후(${YEAR + 10}년)의 나에게`;
+    buildSections(); showStep(1);
+    if (r.fileUrl) toast('이미 녹음을 제출했어요. 다시 녹음해서 제출하면 새 파일로 저장돼요.');
+    else if (r.returning) toast('이전에 쓰던 편지를 불러왔어요 😊');
+  }catch(e){ toast(errMsg(e)); }
+  $('btnStart').disabled = false; $('btnStart').textContent = '타임캡슐 열기 🚀';
+};
+
+function showStep(n){
+  ['step1','step2','step3'].forEach((id,i) => $(id).classList.toggle('hidden', i+1 !== n));
+  ['pill1','pill2','pill3'].forEach((id,i) => { $(id).classList.toggle('on', i+1 === n); $(id).classList.toggle('done', i+1 < n); });
+  stopSpeak();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+/* ---------- 섹션 (STEP1 + STEP2 공용) ---------- */
+function secHtml(s, sfx){
+  const guide = sfx ? '' : `<details class="howto" open>
+      <summary>✏️ 이렇게 써요 · 💡 예시 문장</summary>
+      <ol>${s.how.map(h => `<li>${h}</li>`).join('')}</ol>
+      <div class="ex-title">💡 예시 문장 — 보고 나에게 맞게 바꿔 써요</div>
+      ${s.ex.map((e,i) => `<div class="ex"><span class="ex-n">${i+1}</span><div><div class="ex-en">${e.en}</div><div class="ex-ko">${e.ko}</div></div></div>`).join('')}
+      <div class="ex-warn">⚠️ 예시를 그대로 베끼지 말고, <b>나의 이야기</b>로 바꿔서 써요!</div>
+    </details>`;
+  return `<div class="sec s-${s.key}" id="sec_${s.key}${sfx}">
+    <div class="sec-head"><h3>${s.emoji} ${s.name} <span style="font-size:14px;color:var(--soft)">${s.en}</span></h3>
+      <span class="badge" id="badge_${s.key}${sfx}">0 / ${s.n}문장</span></div>
+    <div class="tip">${s.tip}</div>
+    ${guide}
+    <textarea id="ta_${s.key}${sfx}" placeholder="${s.n}문장으로 써 보세요"></textarea>
+    <div class="warn" id="warn_${s.key}${sfx}"></div>
+  </div>`;
+}
+function buildSections(){
+  $('secs').innerHTML = SECTIONS.map(s => secHtml(s,'')).join('');
+  $('secs2').innerHTML = SECTIONS.map(s => secHtml(s,'2')).join('');
+  $('closing1').textContent = closingLine();
+  SECTIONS.forEach(s => {
+    ['', '2'].forEach(sfx => {
+      const ta = $('ta_' + s.key + sfx);
+      ta.value = drafts[s.key] || '';
+      ta.addEventListener('input', () => {
+        drafts[s.key] = ta.value; updateBadge(s.key); saveLocal();
+        if (sfx) renderLines();
+      });
+      if (!sfx) ta.addEventListener('focus', () => setCurrent(s.key));
+    });
+    updateBadge(s.key);
+  });
+  setCurrent('now');
+}
+function updateBadge(key){
+  const s = SECTIONS.find(x => x.key === key), sents = splitSentences(drafts[key]), c = sents.length;
+  let warn = '';
+  if (s.q && sents.some(t => !/\?\s*$/.test(t))) warn = '❗ 질문은 모두 물음표(?)로 끝나야 해요.';
+  if (!s.q && sents.some(t => /\?\s*$/.test(t))) warn = '❗ 이 부분은 질문이 아니라 평서문으로 써요.';
+  ['', '2'].forEach(sfx => {
+    const b = $('badge_' + key + sfx); if (!b) return;
+    b.textContent = `${c} / ${s.n}문장` + (c === s.n ? ' ✓' : '');
+    b.className = 'badge' + (c === s.n ? ' ok' : c > s.n ? ' over' : '');
+    $('warn_' + key + sfx).textContent = warn;
+  });
+}
+function setCurrent(key){
+  current = key;
+  SECTIONS.forEach(s => $('sec_' + s.key).classList.toggle('active', s.key === key));
+  const s = SECTIONS.find(x => x.key === key);
+  $('chatFor').textContent = `지금 쓰는 부분: ${s.emoji} ${s.name} (${s.n}문장)`;
+  $('chips').innerHTML = s.chips.map(c => `<button class="chip">${esc(c)}</button>`).join('');
+  [...$('chips').children].forEach(ch => ch.onclick = () => sendChat(ch.textContent));
+  renderChat();
+}
+
+/* ---------- 챗봇 ---------- */
+function renderChat(){
+  const s = SECTIONS.find(x => x.key === current);
+  const hello = `안녕, ${info.name}! 나는 캡슐버디야 💌\n‘${s.name}’에 필요한 단어와 힌트를 알려 줄게. 문장은 네가 직접 쓰는 거야!`;
+  $('msgs').innerHTML = `<div class="msg bot">${esc(hello)}</div>` +
+    chatHist[current].map(m => `<div class="msg ${m.role === 'user' ? 'me' : 'bot'}">${esc(m.text)}</div>`).join('');
+  $('msgs').scrollTop = $('msgs').scrollHeight;
+}
+async function sendChat(text){
+  text = (text || '').trim(); if (!text) return;
+  const key = current, hist = chatHist[key], prev = hist.slice();
+  hist.push({role:'user', text}); renderChat();
+  $('chatIn').value = ''; $('btnSend').disabled = true;
+  const w = document.createElement('div'); w.className = 'msg bot wait'; w.textContent = '캡슐버디가 생각 중... 🤔';
+  $('msgs').appendChild(w); $('msgs').scrollTop = $('msgs').scrollHeight;
+  try{ hist.push({role:'model', text: await run('chatHelp', info, key, drafts[key], text, prev)}); }
+  catch(e){ hist.pop(); toast(errMsg(e)); }
+  $('btnSend').disabled = false;
+  if (current === key) renderChat();
+}
+$('btnSend').onclick = () => sendChat($('chatIn').value);
+$('chatIn').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.isComposing) sendChat($('chatIn').value); });
+
+async function saveServer(step, note, labelId){
+  try{
+    const t = await run('saveDraft', info, drafts, step, note, listens); listens = 0;
+    if (labelId) $(labelId).textContent = '저장됨 ' + t.slice(11, 16);
+  }catch(e){ toast('저장 실패: ' + errMsg(e)); }
+}
+$('btnSave1').onclick = async () => { await saveServer('STEP1', '임시 저장', 'saved1'); toast('저장했어요 💾'); };
+
+$('btnTo2').onclick = () => {
+  const miss = SECTIONS.filter(s => !drafts[s.key].trim());
+  if (miss.length) return toast(`‘${miss[0].name}’ 부분을 먼저 써 주세요!`);
+  const wrong = SECTIONS.filter(s => splitSentences(drafts[s.key]).length !== s.n);
+  if (wrong.length && !confirm(`문장 수가 맞지 않는 부분이 있어요: ${wrong.map(s => s.name).join(', ')}\n그래도 STEP 2로 갈까요?`)) return;
+  SECTIONS.forEach(s => { $('ta_' + s.key + '2').value = drafts[s.key]; updateBadge(s.key); });
+  renderLines(); showStep(2);
+  saveServer('STEP1', 'STEP1 완료(초안)', 'saved2');
+};
+
+/* ---------- STEP 2: 문법 점검 ---------- */
+$('btnBack1').onclick = () => { SECTIONS.forEach(s => $('ta_' + s.key).value = drafts[s.key]); showStep(1); };
+$('btnCheck').onclick = async () => {
+  const btn = $('btnCheck'); btn.disabled = true; btn.textContent = '점검 중... ⏳';
+  $('gResult').innerHTML = '<div class="tip">캡슐버디가 꼼꼼히 읽고 있어요...</div>';
+  try{
+    const r = await run('grammarCheck', info, drafts);
+    $('saved2').textContent = '점검 기록 저장됨';
+    let html = r.overall ? `<div class="overall">💬 ${esc(r.overall)}</div>` : '';
+    if (!r.items.length) html += `<div class="allgood">🌟 문법 오류를 찾지 못했어요! 아래에서 들어 보고 대본을 확정해요.</div>`;
+    r.items.forEach((it, i) => {
+      const s = SECTIONS.find(x => x.key === it.part);
+      html += `<div class="gitem"><div class="where">${s ? s.emoji + ' ' + s.name : ''}</div>
+        <div><span class="orig">${esc(it.original)}</span></div>
+        <div>❗ ${esc(it.problem)}</div><div>💡 ${esc(it.hint)}</div>
+        <button class="btn ghost sm reveal" data-i="${i}" style="margin-top:6px">고친 표현 보기</button>
+        <div class="hidden" id="sug${i}">✅ <span class="sug">${esc(it.suggestion)}</span></div></div>`;
+    });
+    $('gResult').innerHTML = html;
+    $('gResult').querySelectorAll('.reveal').forEach(b => b.onclick = () => { $('sug' + b.dataset.i).classList.remove('hidden'); b.remove(); });
+  }catch(e){ $('gResult').innerHTML = `<div class="tip">${esc(errMsg(e))}</div>`; }
+  btn.disabled = false; btn.textContent = '🔍 문법 점검하기';
+};
+
+/* ---------- 듣기 (브라우저 음성) ---------- */
+let voices = [];
+function loadVoices(){ voices = window.speechSynthesis ? speechSynthesis.getVoices() : []; }
+if (window.speechSynthesis){ loadVoices(); speechSynthesis.onvoiceschanged = loadVoices; }
+function pickVoice(){
+  return voices.find(v => /^en[-_]US/i.test(v.lang) && /Google|Samantha|Aria|Jenny|Zira|Ava/i.test(v.name))
+      || voices.find(v => /^en[-_]US/i.test(v.lang)) || voices.find(v => /^en/i.test(v.lang));
+}
+function allLines(){
+  const out = [{tag:'인사', text:'Dear future me,'}];
+  SECTIONS.forEach(s => splitSentences(drafts[s.key]).forEach(t => out.push({tag:s.emoji + ' ' + s.short, text:t})));
+  out.push({tag:'끝인사', text: closingLine()});
+  return out;
+}
+function markPlaying(i){ document.querySelectorAll('.line').forEach((el, j) => el.classList.toggle('playing', j === i)); }
+function speakQueue(items, rate){
+  if (!window.speechSynthesis) return toast('이 브라우저는 듣기 기능을 지원하지 않아요. 크롬에서 열어 주세요.');
+  speechSynthesis.cancel(); listens++;
+  const v = pickVoice();
+  items.forEach((it, k) => {
+    const u = new SpeechSynthesisUtterance(it.text);
+    u.lang = 'en-US'; u.rate = rate; if (v) u.voice = v;
+    u.onstart = () => markPlaying(it.idx);
+    if (k === items.length - 1) u.onend = () => markPlaying(-1);
+    speechSynthesis.speak(u);
+  });
+}
+function speakAll(rate){ speakQueue(allLines().map((l, i) => ({text:l.text, idx:i})), rate); }
+function speakOne(i, rate){ const l = allLines()[i]; if (l) speakQueue([{text:l.text, idx:i}], rate); }
+function stopSpeak(){ if (window.speechSynthesis) speechSynthesis.cancel(); markPlaying(-1); }
+function renderLines(){
+  $('lines').innerHTML = allLines().map((l, i) => `<div class="line"><span class="tag">${esc(l.tag)}</span>
+    <span class="txt">${esc(l.text)}</span>
+    <button class="sp n" onclick="speakOne(${i}, RATE_N)">🔊 보통</button>
+    <button class="sp s" onclick="speakOne(${i}, RATE_S)">🐢 느리게</button></div>`).join('');
+}
+
+$('btnTo3').onclick = async () => {
+  const miss = SECTIONS.filter(s => !drafts[s.key].trim());
+  if (miss.length) return toast(`‘${miss[0].name}’ 부분이 비어 있어요!`);
+  if (!confirm('이 대본으로 녹음할까요? (나중에 STEP 2로 돌아와 고칠 수 있어요)')) return;
+  $('script3').innerHTML = allLines().map(l => `<p>${esc(l.text)}</p>`).join('');
+  showStep(3);
+  saveServer('STEP2', '대본 확정', null);
+};
+$('btnBack2').onclick = () => { renderLines(); showStep(2); };
+
+/* ---------- STEP 3: 녹음 ---------- */
+let rec = null, chunks = [], recBlob = null, recMime = '', secs = 0, timerId = null, stream = null;
+function fmt(s){ return String(Math.floor(s/60)).padStart(2,'0') + ':' + String(s%60).padStart(2,'0'); }
+$('btnRec').onclick = () => rec && rec.state === 'recording' ? stopRec() : startRec();
+
+async function startRec(){
+  if (!navigator.mediaDevices || !window.MediaRecorder) return toast('이 브라우저는 녹음을 지원하지 않아요. 크롬에서 열어 주세요.');
+  try{ stream = await navigator.mediaDevices.getUserMedia({audio:true}); }
+  catch(e){ return toast('마이크를 쓸 수 없어요. 주소창 왼쪽 자물쇠를 눌러 마이크를 ‘허용’해 주세요.'); }
+  stopSpeak();
+  recMime = ['audio/webm;codecs=opus','audio/webm','audio/mp4','audio/ogg'].find(t => MediaRecorder.isTypeSupported(t)) || '';
+  rec = new MediaRecorder(stream, recMime ? {mimeType: recMime} : undefined);
+  chunks = [];
+  rec.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); };
+  rec.onstop = () => {
+    stream.getTracks().forEach(t => t.stop());
+    recBlob = new Blob(chunks, {type: rec.mimeType || recMime || 'audio/webm'});
+    $('player').src = URL.createObjectURL(recBlob);
+    $('recInfo').textContent = `녹음 길이 ${fmt(secs)} · 들어 보고 마음에 들면 제출해요.`;
+    $('recIdle').classList.add('hidden'); $('recDone').classList.remove('hidden');
+  };
+  rec.start();
+  secs = 0; $('timer').textContent = fmt(0);
+  $('btnRec').classList.add('on'); $('btnRec').innerHTML = '<span class="ic">■</span>녹음 멈추기';
+  timerId = setInterval(() => { secs++; $('timer').textContent = fmt(secs); if (secs >= MAX_SEC){ stopRec(); toast('최대 3분이 되어 녹음을 멈췄어요.'); } }, 1000);
+}
+function stopRec(){
+  clearInterval(timerId);
+  if (rec && rec.state === 'recording') rec.stop();
+  $('btnRec').classList.remove('on'); $('btnRec').innerHTML = '<span class="ic">●</span>녹음 시작';
+}
+$('btnReRec').onclick = () => {
+  recBlob = null; $('player').removeAttribute('src');
+  $('recDone').classList.add('hidden'); $('recIdle').classList.remove('hidden'); $('timer').textContent = '00:00';
+};
+function blobToBase64(blob){
+  return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result).split(',')[1]); r.onerror = rej; r.readAsDataURL(blob); });
+}
+$('btnSubmit').onclick = async () => {
+  if (!recBlob || !recBlob.size) return toast('녹음 파일이 없어요. 다시 녹음해 주세요.');
+  if (secs < 5 && !confirm('녹음이 5초보다 짧아요. 그래도 제출할까요?')) return;
+  const btn = $('btnSubmit'); btn.disabled = true; btn.textContent = '제출 중... ⏳';
+  try{
+    const b64 = await blobToBase64(recBlob);
+    const r = await run('submitRecording', info, drafts, b64, recBlob.type, secs, listens); listens = 0;
+    $('submitted').classList.remove('hidden');
+    $('submitted').innerHTML = `<div class="done-box">🎉 제출 완료! (${esc(r.time.slice(11,16))})<br><span style="font-size:15px;font-family:'Gowun Dodum'">10년 후의 나에게 보내는 타임캡슐이 저장되었어요. 다시 녹음해서 제출하면 새 파일로 저장돼요.</span></div>`;
+    toast('제출했어요! 🎉');
+  }catch(e){ toast('제출 실패: ' + errMsg(e)); }
+  btn.disabled = false; btn.textContent = '📤 제출하기';
+};
+
+/* ---------- 교사용 ---------- */
+$('lnkTeacher').onclick = async () => {
+  const pw = prompt('교사용 비밀번호를 입력하세요'); if (!pw) return;
+  teacherPw = pw;
+  try{ await loadTeacher(); }catch(e){ return toast(errMsg(e)); }
+  ['vStart','vMain'].forEach(id => $(id).classList.add('hidden'));
+  $('vTeacher').classList.remove('hidden');
+};
+$('btnReload').onclick = () => loadTeacher().catch(e => toast(errMsg(e)));
+$('btnTOut').onclick = () => location.reload();
+
+async function loadTeacher(){
+  const list = await run('teacherList', teacherPw);
+  list.sort((a,b) => String(a.id).localeCompare(String(b.id)));
+  $('tList').innerHTML = list.length ? `<table>
+    <tr><th>학번</th><th>이름</th><th>챗봇 질문</th><th>문법 점검</th><th>듣기</th><th>녹음</th><th>상태</th><th>최종 수정</th></tr>
+    ${list.map((r,i) => `<tr class="row" data-i="${i}"><td>${esc(r.id)}</td><td>${esc(r.name)}</td><td>${esc(r.chats)}</td>
+      <td>${esc(r.grammars)}</td><td>${esc(r.listens)}</td>
+      <td>${r.fileUrl ? `<a href="${esc(r.fileUrl)}" target="_blank" onclick="event.stopPropagation()">▶ 듣기 (${esc(r.seconds)}초)</a>` : '-'}</td>
+      <td>${esc(r.status)}</td><td>${esc(r.updated)}</td></tr>`).join('')}
+  </table><div class="tip">학생을 누르면 편지 내용과 작성 과정이 시간순으로 보여요. 녹음 파일은 선생님 드라이브 ‘타임캡슐 말하기 녹음’ 폴더에도 있어요.</div>`
+  : '<div class="tip">아직 기록이 없어요.</div>';
+  $('tList').querySelectorAll('tr.row').forEach(tr => tr.onclick = () => showDetail(list[tr.dataset.i]));
+}
+async function showDetail(st){
+  $('tDetail').innerHTML = '<div class="tip">불러오는 중...</div>';
+  try{
+    const logs = await run('teacherDetail', teacherPw, st.id, st.name);
+    $('tDetail').innerHTML = `<h3>📋 ${esc(st.id)} ${esc(st.name)}</h3>
+      <div class="card" style="background:#fff;margin-bottom:12px">
+        ${SECTIONS.map(s => `<b>${s.emoji} ${s.name}</b> (${splitSentences(st[s.key]).length}/${s.n}문장)<p style="margin:2px 0 10px">${esc(st[s.key]) || '-'}</p>`).join('')}
+        ${st.fileUrl ? `<a class="btn blue sm" href="${esc(st.fileUrl)}" target="_blank" style="text-decoration:none">▶ 녹음 듣기</a>` : ''}
+      </div>
+      ${logs.map(l => `<div class="tl"><span class="k">${esc(l.type)}</span><span class="t">${esc(l.time)} · ${esc(l.step)} ${esc(l.part)}</span>
+        ${l.input ? `<pre>${esc(l.input)}</pre>` : ''}${l.output ? `<pre class="ai">🤖 ${esc(l.output)}</pre>` : ''}</div>`).join('')}`;
+    $('tDetail').scrollIntoView({behavior:'smooth'});
+  }catch(e){ $('tDetail').innerHTML = `<div class="tip">${esc(errMsg(e))}</div>`; }
+}
+</script>
+</body>
+</html>
