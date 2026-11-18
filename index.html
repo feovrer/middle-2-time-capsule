@@ -126,6 +126,13 @@
   .tl .k{font-family:'Jua';display:inline-block;padding:1px 10px;border-radius:999px;background:var(--sky);margin-right:6px;font-size:14px}
   .tl pre{white-space:pre-wrap;font-family:'Gowun Dodum';background:#faf7ff;border-radius:10px;padding:8px 10px;margin:6px 0}
   .tl pre.ai{background:#fffbe8}
+  .stage{display:inline-block;padding:3px 12px;border-radius:999px;font-family:'Jua';font-size:14px;white-space:nowrap}
+  .st1{background:var(--peach)} .st2{background:var(--sky)} .st3{background:var(--lilac)} .stD{background:var(--green);color:#fff}
+  .grade{display:grid;grid-template-columns:1.2fr 1fr;gap:16px;align-items:start}
+  @media (max-width:900px){.grade{grid-template-columns:1fr}}
+  .grade .script{max-height:none}
+  .summary-row{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 14px}
+  .summary-row span:not(.stage){background:#fff;border-radius:999px;padding:4px 12px;font-size:14px}
   footer{text-align:center;margin-top:30px}
   footer a{color:var(--soft);font-size:13px;cursor:pointer;text-decoration:underline}
   .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 20px;border-radius:999px;font-family:'Jua';z-index:99;transition:opacity .3s;max-width:90vw;text-align:center}
@@ -150,6 +157,9 @@
     </div>
     <label for="inId">학번</label><input id="inId" placeholder="예: 20101" autocomplete="off">
     <label for="inName">이름</label><input id="inName" placeholder="이름" autocomplete="off">
+    <label for="inPw">나만의 비밀번호 (숫자 4자리)</label>
+    <input id="inPw" type="password" inputmode="numeric" maxlength="4" placeholder="예: 0428" autocomplete="off">
+    <div class="tip">🔑 <b>처음 들어올 때</b> 입력한 번호가 내 비밀번호가 돼요. 페이지를 나갔다가 다시 들어올 때 같은 번호를 넣으면 쓰던 편지가 그대로 나와요.<br>잊어버렸으면 선생님께 말해요.</div>
     <div style="text-align:center;margin-top:20px"><button class="btn" id="btnStart">타임캡슐 열기 🚀</button></div>
   </section>
 
@@ -272,7 +282,7 @@
 
 <script>
 /* ★ Apps Script 웹앱 배포 후 받은 주소(…/exec)를 여기에 붙여넣으세요 ★ */
-const API_URL = 'https://script.google.com/macros/s/AKfycbxb4INmkwWLD5GNuTD-0ARAGE2NJLfcOYVgY3jd5PzUsAbQkCwoptPxz-tqD9teef1U/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycby7_jbHLzbaQW2XpOHTPoi-8_nZNnLbNQ8iJx21KT9eUNHTGzWZM2v-w6F15nN2GntW/exec';
 
 const RATE_N = 0.95, RATE_S = 0.65;   // 보통 / 느린 속도
 const MAX_SEC = 180;                  // 최대 녹음 시간(초)
@@ -350,13 +360,26 @@ function splitSentences(text){
   return String(text || '').replace(/\s*\n+\s*/g, ' ').trim().split(/(?<=[.!?])\s+/).filter(s => s.trim());
 }
 function localKey(){ return 'tc_' + info.id + '_' + info.name; }
-function saveLocal(){ try{ localStorage.setItem(localKey(), JSON.stringify(drafts)); }catch(e){} }
+let dirty = false;
+function saveLocal(){ dirty = true; try{ localStorage.setItem(localKey(), JSON.stringify(drafts)); }catch(e){} }
+/* 1분마다 바뀐 내용이 있으면 서버에 자동 저장 → 다른 컴퓨터에서 들어와도 이어서 쓸 수 있음 */
+let autoTimer = null;
+function startAutosave(){
+  clearInterval(autoTimer);
+  autoTimer = setInterval(async () => {
+    if (!dirty) return;
+    dirty = false;
+    try{ await run('saveDraft', info, drafts, '-', '자동 저장', 0); }catch(e){ dirty = true; }
+  }, 60000);
+}
+window.addEventListener('beforeunload', e => { if (dirty){ e.preventDefault(); e.returnValue = ''; } });
 function closingLine(){ return `From, ${info.name ? 'me in ' + YEAR : ''}`; }
 
 /* ---------- 시작 ---------- */
 $('btnStart').onclick = async () => {
-  info = { id:$('inId').value.trim(), name:$('inName').value.trim() };
+  info = { id:$('inId').value.trim(), name:$('inName').value.trim(), pw:$('inPw').value.trim() };
   if (!info.id || !info.name) return toast('학번과 이름을 모두 써 주세요!');
+  if (!/^\d{4}$/.test(info.pw)) return toast('비밀번호는 숫자 4자리로 써 주세요!');
   $('btnStart').disabled = true; $('btnStart').textContent = '여는 중...';
   try{
     const r = await run('startSession', info);
@@ -368,9 +391,15 @@ $('btnStart').onclick = async () => {
     }catch(e){}
     $('vStart').classList.add('hidden'); $('vMain').classList.remove('hidden');
     $('who').textContent = `${info.id} ${info.name} · 10년 후(${YEAR + 10}년)의 나에게`;
-    buildSections(); showStep(1);
+    buildSections();
+    if (r.created) alert(`🔑 비밀번호가 만들어졌어요!\n\n내 비밀번호: ${info.pw}\n\n다시 들어올 때 꼭 필요하니 기억해 두세요.`);
+    if (r.returning && /STEP 2|STEP 3|제출/.test(r.status || '')) {   // 지난번에 STEP 2 이후까지 갔으면 STEP 2에서 이어서
+      SECTIONS.forEach(s => { $('ta_' + s.key + '2').value = drafts[s.key]; updateBadge(s.key); });
+      renderLines(); showStep(2);
+    } else showStep(1);
     if (r.fileUrl) toast('이미 녹음을 제출했어요. 다시 녹음해서 제출하면 새 파일로 저장돼요.');
     else if (r.returning) toast('이전에 쓰던 편지를 불러왔어요 😊');
+    startAutosave();
   }catch(e){ toast(errMsg(e)); }
   $('btnStart').disabled = false; $('btnStart').textContent = '타임캡슐 열기 🚀';
 };
@@ -465,7 +494,7 @@ $('chatIn').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.isCom
 
 async function saveServer(step, note, labelId){
   try{
-    const t = await run('saveDraft', info, drafts, step, note, listens); listens = 0;
+    const t = await run('saveDraft', info, drafts, step, note, listens); listens = 0; dirty = false;
     if (labelId) $(labelId).textContent = '저장됨 ' + t.slice(11, 16);
   }catch(e){ toast('저장 실패: ' + errMsg(e)); }
 }
@@ -482,7 +511,7 @@ $('btnTo2').onclick = () => {
 };
 
 /* ---------- STEP 2: 문법 점검 ---------- */
-$('btnBack1').onclick = () => { SECTIONS.forEach(s => $('ta_' + s.key).value = drafts[s.key]); showStep(1); };
+$('btnBack1').onclick = () => { SECTIONS.forEach(s => $('ta_' + s.key).value = drafts[s.key]); showStep(1); saveServer('STEP2', 'STEP 1로 돌아감', null); };
 $('btnCheck').onclick = async () => {
   const btn = $('btnCheck'); btn.disabled = true; btn.textContent = '점검 중... ⏳';
   $('gResult').innerHTML = '<div class="tip">캡슐버디가 꼼꼼히 읽고 있어요...</div>';
@@ -550,7 +579,7 @@ $('btnTo3').onclick = async () => {
   showStep(3);
   saveServer('STEP2', '대본 확정', null);
 };
-$('btnBack2').onclick = () => { renderLines(); showStep(2); };
+$('btnBack2').onclick = () => { renderLines(); showStep(2); saveServer('STEP3', 'STEP 2로 돌아감', null); };
 
 /* ---------- STEP 3: 녹음 ---------- */
 let rec = null, chunks = [], recBlob = null, recMime = '', secs = 0, timerId = null, stream = null;
@@ -615,30 +644,71 @@ $('lnkTeacher').onclick = async () => {
 $('btnReload').onclick = () => loadTeacher().catch(e => toast(errMsg(e)));
 $('btnTOut').onclick = () => location.reload();
 
+function stageClass(t){ t = String(t||''); return /제출/.test(t) ? 'stD' : /STEP 3/.test(t) ? 'st3' : /STEP 2/.test(t) ? 'st2' : 'st1'; }
+function driveId(url){ const m = String(url||'').match(/\/d\/([\w-]+)/) || String(url||'').match(/[?&]id=([\w-]+)/); return m ? m[1] : ''; }
+let teacherTimer = null, teacherList_ = [];
+
 async function loadTeacher(){
   const list = await run('teacherList', teacherPw);
   list.sort((a,b) => String(a.id).localeCompare(String(b.id)));
-  $('tList').innerHTML = list.length ? `<table>
-    <tr><th>학번</th><th>이름</th><th>챗봇 질문</th><th>문법 점검</th><th>듣기</th><th>녹음</th><th>상태</th><th>최종 수정</th></tr>
-    ${list.map((r,i) => `<tr class="row" data-i="${i}"><td>${esc(r.id)}</td><td>${esc(r.name)}</td><td>${esc(r.chats)}</td>
-      <td>${esc(r.grammars)}</td><td>${esc(r.listens)}</td>
-      <td>${r.fileUrl ? `<a href="${esc(r.fileUrl)}" target="_blank" onclick="event.stopPropagation()">▶ 듣기 (${esc(r.seconds)}초)</a>` : '-'}</td>
-      <td>${esc(r.status)}</td><td>${esc(r.updated)}</td></tr>`).join('')}
-  </table><div class="tip">학생을 누르면 편지 내용과 작성 과정이 시간순으로 보여요. 녹음 파일은 선생님 드라이브 ‘타임캡슐 말하기 녹음’ 폴더에도 있어요.</div>`
+  teacherList_ = list;
+  const cnt = k => list.filter(r => stageClass(r.status) === k).length;
+  $('tList').innerHTML = list.length ? `
+    <div class="summary-row"><span>전체 ${list.length}명</span><span class="stage st1">STEP 1 ${cnt('st1')}명</span>
+      <span class="stage st2">STEP 2 ${cnt('st2')}명</span><span class="stage st3">STEP 3 ${cnt('st3')}명</span>
+      <span class="stage stD">제출 ${cnt('stD')}명</span><span style="color:var(--soft)">30초마다 자동 새로고침</span></div>
+    <table>
+    <tr><th>학번</th><th>이름</th><th>현재 단계</th><th>챗봇 질문</th><th>문법 점검</th><th>듣기</th><th>녹음</th><th>최종 활동</th><th>비밀번호</th></tr>
+    ${list.map((r,i) => `<tr class="row" data-i="${i}"><td>${esc(r.id)}</td><td><b>${esc(r.name)}</b></td>
+      <td><span class="stage ${stageClass(r.status)}">${esc(r.status)}</span></td>
+      <td>${esc(r.chats)}</td><td>${esc(r.grammars)}</td><td>${esc(r.listens)}</td>
+      <td>${r.fileUrl ? `▶ ${esc(r.seconds)}초` : '-'}</td>
+      <td>${esc(String(r.updated).slice(5,16))}</td>
+      <td><button class="btn ghost sm reset" data-i="${i}">🔑 초기화</button></td></tr>`).join('')}
+  </table><div class="tip">학생 이름을 누르면 아래에 <b>제출한 대본과 녹음</b>(제출 전이면 쓰는 중인 편지)과 작성 과정이 보여요.</div>`
   : '<div class="tip">아직 기록이 없어요.</div>';
   $('tList').querySelectorAll('tr.row').forEach(tr => tr.onclick = () => showDetail(list[tr.dataset.i]));
+  $('tList').querySelectorAll('.reset').forEach(b => b.onclick = async ev => {
+    ev.stopPropagation();
+    const st = list[b.dataset.i];
+    if (!confirm(`${st.id} ${st.name} 학생의 비밀번호를 초기화할까요?\n학생이 다음에 들어올 때 입력하는 번호가 새 비밀번호가 됩니다. (쓴 글은 그대로 남아요)`)) return;
+    try{ await run('teacherResetPw', teacherPw, st.id, st.name); toast('초기화했어요. 학생에게 새 번호로 들어오라고 안내해 주세요.'); }
+    catch(e){ toast(errMsg(e)); }
+  });
+  clearInterval(teacherTimer);
+  teacherTimer = setInterval(() => { if (!$('vTeacher').classList.contains('hidden')) loadTeacher().catch(() => {}); }, 30000);
 }
+
 async function showDetail(st){
   $('tDetail').innerHTML = '<div class="tip">불러오는 중...</div>';
   try{
     const logs = await run('teacherDetail', teacherPw, st.id, st.name);
-    $('tDetail').innerHTML = `<h3>📋 ${esc(st.id)} ${esc(st.name)}</h3>
-      <div class="card" style="background:#fff;margin-bottom:12px">
+    const id = driveId(st.fileUrl);
+    const scriptLines = st.script ? st.script.split('\n') : null;
+    const checks = SECTIONS.map(s => {
+      const c = splitSentences(st[s.key]).length;
+      return `<span class="stage ${c === s.n ? 'stD' : 'st1'}">${s.emoji} ${s.short} ${c}/${s.n}</span>`;
+    }).join(' ');
+    const main = scriptLines ? `
+      <div class="grade">
+        <div><h3 style="margin:0 0 8px">📜 제출한 발표 대본</h3>
+          <div class="script">${scriptLines.map(l => `<p>${esc(l)}</p>`).join('')}</div></div>
+        <div><h3 style="margin:0 0 8px">🎙️ 제출한 녹음 (${esc(st.seconds)}초)</h3>
+          ${id ? `<iframe src="https://drive.google.com/file/d/${id}/preview" style="width:100%;height:120px;border:0;border-radius:14px;background:#fff" allow="autoplay"></iframe>` : ''}
+          <a class="btn blue sm" href="${esc(st.fileUrl)}" target="_blank" style="text-decoration:none;display:inline-block;margin-top:8px">드라이브에서 열기 ↗</a>
+          <div class="tip" style="margin-top:12px">문장 수 확인</div><div>${checks}</div>
+          <div class="tip" style="margin-top:10px">챗봇 질문 ${esc(st.chats)}회 · 문법 점검 ${esc(st.grammars)}회 · 듣기 ${esc(st.listens)}회</div>
+          ${/제출/.test(st.status) ? '' : `<div class="warn">※ 제출 후 다시 고치는 중이에요 (현재 단계: ${esc(st.status)})</div>`}
+        </div>
+      </div>` : `
+      <div class="card" style="background:#fff">
+        <div class="tip">아직 녹음을 제출하지 않았어요. 지금 쓰고 있는 편지예요. (현재 단계: ${esc(st.status)})</div>
         ${SECTIONS.map(s => `<b>${s.emoji} ${s.name}</b> (${splitSentences(st[s.key]).length}/${s.n}문장)<p style="margin:2px 0 10px">${esc(st[s.key]) || '-'}</p>`).join('')}
-        ${st.fileUrl ? `<a class="btn blue sm" href="${esc(st.fileUrl)}" target="_blank" style="text-decoration:none">▶ 녹음 듣기</a>` : ''}
-      </div>
+      </div>`;
+    $('tDetail').innerHTML = `<h2 style="margin:0 0 10px">📋 ${esc(st.id)} ${esc(st.name)}</h2>${main}
+      <details style="margin-top:16px"><summary style="font-family:Jua;cursor:pointer">🕒 작성 과정 전체 보기 (${logs.length}개 기록)</summary>
       ${logs.map(l => `<div class="tl"><span class="k">${esc(l.type)}</span><span class="t">${esc(l.time)} · ${esc(l.step)} ${esc(l.part)}</span>
-        ${l.input ? `<pre>${esc(l.input)}</pre>` : ''}${l.output ? `<pre class="ai">🤖 ${esc(l.output)}</pre>` : ''}</div>`).join('')}`;
+        ${l.input ? `<pre>${esc(l.input)}</pre>` : ''}${l.output ? `<pre class="ai">🤖 ${esc(l.output)}</pre>` : ''}</div>`).join('')}</details>`;
     $('tDetail').scrollIntoView({behavior:'smooth'});
   }catch(e){ $('tDetail').innerHTML = `<div class="tip">${esc(errMsg(e))}</div>`; }
 }
